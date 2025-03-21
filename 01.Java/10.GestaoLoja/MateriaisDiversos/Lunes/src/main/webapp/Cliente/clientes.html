@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Lista de Contas</title>
+<style>
+    body {
+        font-family: Arial, sans-serif;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        height: 100vh;
+        margin: 0;
+        padding: 20px;
+        background-color: #f4f4f4;
+    }
+    h1 {
+        color: #00008B; /* Azul escuro */
+    }
+    .table-container {
+        width: 100%;
+        max-width: 800px;
+        overflow: auto;
+        max-height: 70vh; /* Ajuste a altura máxima da tabela */
+        position: relative;
+    }
+    table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 20px;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    }
+    th, td {
+        padding: 8px; /* Reduzir o padding para diminuir a altura das células */
+        border: 1px solid #ccc;
+        text-align: left;
+    }
+    th {
+        background-color: #4CAF50; /* Mesma cor dos botões */
+        color: white;
+        position: sticky;
+        top: 0;
+        height: 20px;
+        z-index: 3; /* Aumentar o z-index para garantir que o cabeçalho fique acima das colunas fixas */
+    }
+    .filter-row th {
+        top: 35px; /* Ajuste conforme necessário para alinhar com a altura do cabeçalho */
+    }
+    td {
+        font-size: 12px; /* Reduzir o tamanho da fonte dos dados da tabela */
+    }
+    .fixed-column {
+        position: sticky;
+        left: 0;
+        background-color: #4CAF50; /* Mesma cor dos botões */
+        z-index: 2; /* Ajustar o z-index para garantir que as colunas fixas fiquem abaixo do cabeçalho */
+    }
+    .fixed-column + .fixed-column {
+        left: 100px; /* Ajuste conforme necessário */
+    }
+    .fixed-column + .fixed-column + .fixed-column {
+        left: 200px; /* Ajuste conforme necessário */
+    }
+    tr:nth-child(even) {
+        background-color: #f9f9f9;
+    }
+    .sap-column {
+        width: 100px; /* Ajuste a largura conforme necessário */
+        min-width: 100px; /* Garantir largura mínima */
+        max-width: 100px; /* Garantir largura máxima */
+    }
+    .ppm-column {
+        width: 100px; /* Ajuste a largura conforme necessário */
+        min-width: 100px; /* Garantir largura mínima */
+        max-width: 100px; /* Garantir largura máxima */
+    }
+    .type-column {
+        width: 100px; /* Fixar a largura da coluna Tipo */
+        min-width: 100px; /* Garantir largura mínima */
+        max-width: 100px; /* Garantir largura máxima */
+    }
+    .filter-row input {
+        width: 100%;
+        box-sizing: border-box;
+    }
+    .filter-row th, .filter-row td {
+        height: 20px; /* Ajuste conforme necessário para alinhar com a altura do cabeçalho */
+    }
+</style>
+</head>
+<body>
+    <h1>Lista de Contas</h1>
+    <div class="table-container">
+        <table id="accountsTable">
+            <thead>
+                <tr>
+                    <th class="fixed-column ppm-column">ID PPM</th>
+                    <th class="fixed-column sap-column">ID SAP</th>
+                    <th class="fixed-column">Nome</th>
+                    <th>Descrição</th>
+                    <th class="type-column">Tipo</th>
+                </tr>
+                <tr class="filter-row">
+                    <th class="fixed-column ppm-column"><input type="text" id="filterPpmId" onkeyup="filterTable()" placeholder="por ID PPM"></th>
+                    <th class="fixed-column sap-column"><input type="text" id="filterSapId" onkeyup="filterTable()" placeholder="por ID SAP"></th>
+                    <th class="fixed-column"><input type="text" id="filterName" onkeyup="filterTable()" placeholder="por Nome"></th>
+                    <th><input type="text" id="filterDescription" onkeyup="filterTable()" placeholder="por Descrição"></th>
+                    <th class="type-column"><input type="text" id="filterType" onkeyup="filterTable()" placeholder="por Tipo"></th>
+                </tr>
+            </thead>
+            <tbody>
+                <!-- As linhas da tabela serão preenchidas dinamicamente -->
+            </tbody>
+        </table>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            fetch('/contas')
+                .then(response => response.json())
+                .then(data => {
+                    const tableBody = document.getElementById('accountsTable').querySelector('tbody');
+                    tableBody.innerHTML = '';
+                    data.forEach(account => {
+                        const row = tableBody.insertRow();
+                        row.insertCell(0).textContent = account.accountPpmId;
+                        row.insertCell(1).textContent = account.accountSapId;
+                        row.insertCell(2).textContent = account.accountName;
+                        row.insertCell(3).textContent = account.accountDescription;
+                        row.insertCell(4).textContent = account.accountType;
+                    });
+                })
+                .catch(error => {
+                    console.error('Erro ao buscar as contas:', error);
+                });
+        });
+
+        function filterTable() {
+            console.log('filterTable function called'); // Log para depuração
+            const filterPpmId = document.getElementById('filterPpmId');
+            const filterSapId = document.getElementById('filterSapId');
+            const filterName = document.getElementById('filterName');
+            const filterDescription = document.getElementById('filterDescription');
+            const filterType = document.getElementById('filterType');
+            const table = document.getElementById('accountsTable');
+            const rows = table.getElementsByTagName('tr');
+
+            for (let i = 2; i < rows.length; i++) {
+                const cells = rows[i].getElementsByTagName('td');
+                if (cells.length < 5) continue; // Verificar se a linha tem células suficientes
+
+                const ppmId = cells ? cells.textContent : '';
+                const sapId = cells ? cells.textContent : '';
+                const name = cells ? cells.textContent : '';
+                const description = cells ? cells.textContent : '';
+                const type = cells ? cells.textContent : '';
+
+                console.log(`Row ${i}: ppmId=${ppmId}, sapId=${sapId}, name=${name}, description=${description}, type=${type}`); // Log para depuração
+
+                rows[i].style.display = 
+                    (ppmId.includes(filterPpmId) &&
+                    sapId.includes(filterSapId) &&
+                    name.includes(filterName) &&
+                    description.includes(filterDescription) &&
+                    type.includes(filterType)) ? '' : 'none';
+            }
+        }
+    </script>
+</body>
+</html>
+

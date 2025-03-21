@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Exemplo de Tabela e Gráfico</title>
+    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+    <style>
+        #myChart {
+            width: 80%;
+            height: 500px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Insira os Dados</h1>
+    <form id="dataForm">
+        <table border="1">
+            <thead>
+                <tr>
+                    <th>Nome</th>
+                    <th>Valor</th>
+                    <th>Tipo</th>
+                </tr>
+            </thead>
+            <tbody id="tableBody">
+                <tr>
+                    <td><input type="text" name="nome0" required></td>
+                    <td><input type="number" name="valor0" required></td>
+                    <td>
+                        <select name="tipo0">
+                            <option value="relative">Relativo</option>
+                        </select>
+                    </td>
+                </tr>
+                <tr>
+                    <td><input type="text" name="nome1" required></td>
+                    <td><input type="number" name="valor1" required></td>
+                    <td>
+                        <select name="tipo1">
+                            <option value="relative">Relativo</option>
+                            <option value="total">Total</option>
+                        </select>
+                    </td>
+                </tr>
+                <tr>
+                    <td><input type="text" name="nome2" required></td>
+                    <td><input type="number" name="valor2" required></td>
+                    <td>
+                        <select name="tipo2">
+                            <option value="relative">Relativo</option>
+                            <option value="total">Total</option>
+                        </select>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+        <button type="button" id="addRowBtn">+</button>
+        <button type="submit">Gerar Gráfico</button>
+    </form>
+
+    <div id="myChart"></div>
+
+    <script>
+        let rowCount = 3;
+
+        document.getElementById('addRowBtn').addEventListener('click', function() {
+            if (rowCount < 20) {
+                const tableBody = document.getElementById('tableBody');
+                const newRow = document.createElement('tr');
+
+                newRow.innerHTML = `
+                    <td><input type="text" name="nome${rowCount}" required></td>
+                    <td><input type="number" name="valor${rowCount}" required></td>
+                    <td>
+                        <select name="tipo${rowCount}">
+                            <option value="relative">Relativo</option>
+                            <option value="total">Total</option>
+                        </select>
+                    </td>
+                `;
+
+                tableBody.appendChild(newRow);
+                rowCount++;
+            } else {
+                alert('Você atingiu o limite de 20 linhas.');
+            }
+        });
+
+        document.getElementById('dataForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            console.log('Formulário enviado');
+
+            const nomes = [];
+            const valores = [];
+            const tipos = [];
+            let acumulado = 0;
+            let erroTotal = false;
+            let mensagemErro = '';
+            
+            for (let i = 0; i < rowCount; i++) {
+                const nomeInput = document.querySelector(`input[name="nome${i}"]`);
+                const valorInput = document.querySelector(`input[name="valor${i}"]`);
+                const tipoInput = document.querySelector(`select[name="tipo${i}"]`);
+                
+                if (nomeInput && valorInput && tipoInput) {
+                    const nome = nomeInput.value;
+                    const valor = Number(valorInput.value);
+                    const tipo = tipoInput.value;
+                    
+                    if (nome && valor) {
+                        nomes.push(nome);
+                        valores.push(valor);
+                        tipos.push(tipo);
+                        if (tipo !== 'total') {
+                            acumulado += valor;
+                        } else if (valor !== acumulado) {
+                            erroTotal = true;
+                            mensagemErro = `O valor total informado (${valor}) está diferente do acumulado das colunas anteriores (${acumulado}).`;
+                        }
+                    }
+                }
+            }
+
+            console.log('Nomes:', nomes);
+            console.log('Valores:', valores);
+            console.log('Tipos:', tipos);
+
+            if (erroTotal) {
+                alert(mensagemErro);
+            } else if (nomes.length > 0 && valores.length > 0) {
+                const textColors = valores.map((valor, index) => (tipos[index] === 'total' && valor !== acumulado) ? 'red' : 'black');
+                const barColors = valores.map((valor, index) => (index === 0 || tipos[index] === 'total') ? 'blue' : 'gray');
+                const data = [{
+                    type: "waterfall",
+                    orientation: "v",
+                    measure: tipos,
+                    x: nomes,
+                    y: valores,
+                    textposition: "inside",
+                    text: valores.map(String),
+                    textfont: {
+                        color: textColors
+                    },
+                    marker: {
+                        color: barColors
+                    },
+                    connector: {
+                        line: {
+                            color: "rgb(63, 63, 63)"
+                        }
+                    }
+                }];
+
+                const layout = {
+                    title: {
+                        text: "Gráfico de Cascata"
+                    },
+                    xaxis: {
+                        type: "category"
+                    },
+                    yaxis: {
+                        type: "linear"
+                    },
+                    autosize: true,
+                    showlegend: false
+                };
+
+                const config = {
+                    displayModeBar: false,
+                    staticPlot: true
+                };
+
+                Plotly.newPlot('myChart', data, layout, config);
+            } else {
+                alert('Por favor, preencha todos os campos antes de gerar o gráfico.');
+            }
+        });
+
+        window.addEventListener('resize', function() {
+            Plotly.Plots.resize(document.getElementById('myChart'));
+        });
+    </script>
+</body>
+</html>

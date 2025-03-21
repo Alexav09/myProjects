@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Lista de Produtos</title>
+<style>
+    body {
+        font-family: Arial, sans-serif;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        height: 100vh;
+        margin: 0;
+        padding: 20px;
+        background-color: #f4f4f4;
+    }
+    h1 {
+        color: #00008B;
+    }
+    .table-container {
+        width: 100%;
+        max-width: 1200px;
+        position: relative;
+    }
+    .data-container {
+        width: 100%;
+        max-height: 70vh;
+        overflow-y: auto; /* Rolagem apenas na tabela de dados */
+    }
+    table {
+        width: 100%;
+        border-collapse: collapse;
+        table-layout: fixed; /* Define larguras fixas */
+    }
+    th, td {
+        padding: 8px;
+        border: 1px solid #ccc;
+        text-align: left;
+        white-space: nowrap; /* Evita quebra de linha */
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+    th {
+        background-color: #4CAF50;
+        color: white;
+        text-align: center;
+    }
+    tr:nth-child(even) {
+        background-color: #f9f9f9;
+    }
+    .filter-row input {
+        width: 100%;
+        box-sizing: border-box;
+        border: 1px solid #ccc;
+    }
+</style>
+</head>
+<body>
+    <h1>Lista de Produtos</h1>
+    <!-- Tabela de cabeçalho e filtros -->
+    <div class="table-container">
+        <table id="productsTable1">
+            <colgroup>
+                <col style="width: 5px;">
+                <col style="width: 30px;">
+                <col style="width: 15px;">
+                <col style="width: 15px;">
+                <col style="width: 15px;">
+                <col style="width: 15px;">
+                <col style="width: 15px;">
+                <col style="width: 15px;">
+                <col style="width: 20px;">
+            </colgroup>
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Nome</th>
+                    <th>Preço</th>
+                    <th>Preço do <br>Tecido</th>
+                    <th>Preço da <br>Mão de Obra</th>
+                    <th>Preço dos<br> Encargos</th>
+                    <th>Preço do <br>Corte e Molde</th>
+                    <th>Desconto</th>
+                    <th>Data de Criação</th>
+                </tr>
+                <tr class="filter-row">
+                    <th><input type="text" id="filterId" onkeyup="filterTable()" placeholder="por ID"></th>
+                    <th><input type="text" id="filterName" onkeyup="filterTable()" placeholder="por Nome"></th>
+                    <th><input type="text" id="filterPrice" onkeyup="filterTable()" placeholder="por Preço"></th>
+                    <th><input type="text" id="filterPrecoTecido" onkeyup="filterTable()" placeholder="por Preço do Tecido"></th>
+                    <th><input type="text" id="filterPrecoMaoObra" onkeyup="filterTable()" placeholder="por Preço da Mão de Obra"></th>
+                    <th><input type="text" id="filterPrecoEncargos" onkeyup="filterTable()" placeholder="por Preço dos Encargos"></th>
+                    <th><input type="text" id="filterPrecoCorteMolde" onkeyup="filterTable()" placeholder="por Preço do Corte e Molde"></th>
+                    <th><input type="text" id="filterDesconto" onkeyup="filterTable()" placeholder="por Desconto"></th>
+                    <th><input type="text" id="filterDataCriacao" onkeyup="filterTable()" placeholder="por Data de Criação"></th>
+                </tr>
+            </thead>
+        </table>
+    </div>
+    <!-- Tabela de dados -->
+    <div class="table-container data-container">
+        <table id="productsTable">
+            <colgroup>
+               <col style="width: 5px;">
+                <col style="width: 30px;">
+                <col style="width: 15px;">
+                <col style="width: 15px;">
+                <col style="width: 15px;">
+                <col style="width: 15px;">
+                <col style="width: 15px;">
+                <col style="width: 15px;">
+                <col style="width: 18px;">
+            </colgroup>
+            <tbody>
+                <!-- Linhas preenchidas dinamicamente -->
+            </tbody>
+        </table>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            fetch('http://localhost:8080/api/produtos')
+                .then(response => response.json())
+                .then(data => {
+                    const tableBody = document.getElementById('productsTable').querySelector('tbody');
+                    tableBody.innerHTML = '';
+                    data.forEach(product => {
+                        const row = tableBody.insertRow();
+                        row.insertCell(0).textContent = product.idProduto;
+                        row.insertCell(1).textContent = product.nomeProduto;
+                        row.insertCell(2).textContent = parseFloat(product.precoProduto).toFixed(2);
+                        row.insertCell(3).textContent = parseFloat(product.precoTecido).toFixed(2);
+                        row.insertCell(4).textContent = parseFloat(product.precoMaoObra).toFixed(2);
+                        row.insertCell(5).textContent = parseFloat(product.precoEncargos).toFixed(2);
+                        row.insertCell(6).textContent = parseFloat(product.precoCorteMolde).toFixed(2);
+                        row.insertCell(7).textContent = parseFloat(product.descontoProduto).toFixed(2);
+                        row.insertCell(8).textContent = product.dataCriacaoProduto;
+                    });
+                })
+                .catch(error => {
+                    console.error('Erro ao buscar os produtos:', error);
+                });
+        });
+
+        function filterTable() {
+            const filters = {
+                id: document.getElementById('filterId').value.toLowerCase(),
+                name: document.getElementById('filterName').value.toLowerCase(),
+                price: document.getElementById('filterPrice').value.toLowerCase(),
+                precoTecido: document.getElementById('filterPrecoTecido').value.toLowerCase(),
+                precoMaoObra: document.getElementById('filterPrecoMaoObra').value.toLowerCase(),
+                precoEncargos: document.getElementById('filterPrecoEncargos').value.toLowerCase(),
+                precoCorteMolde: document.getElementById('filterPrecoCorteMolde').value.toLowerCase(),
+                desconto: document.getElementById('filterDesconto').value.toLowerCase(),
+                dataCriacao: document.getElementById('filterDataCriacao').value.toLowerCase(),
+            };
+
+            const rows = document.querySelector('#productsTable tbody').getElementsByTagName('tr');
+            for (let row of rows) {
+                const cells = row.getElementsByTagName('td');
+                if (cells.length < 9) continue;
+
+                row.style.display =
+                    Object.keys(filters).every((key, index) =>
+                        cells[index].textContent.toLowerCase().includes(filters[key])
+                    ) ? '' : 'none';
+            }
+        }
+    </script>
+</body>
+</html>

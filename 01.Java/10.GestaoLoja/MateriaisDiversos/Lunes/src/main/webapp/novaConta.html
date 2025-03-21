@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Nova Conta</title>
+<style>
+    body {
+        font-family: Arial, sans-serif;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+        margin: 0;
+    }
+    form {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 10px;
+        max-width: 600px;
+        width: 100%;
+        padding: 30px;
+        border: 1px solid #ccc;
+        border-radius: 10px;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    }
+    h1 {
+        grid-column: span 2;
+        text-align: center;
+        color: #00008B; /* Azul escuro */
+    }
+    label {
+        display: flex;
+        align-items: center;
+        justify-content: flex-start;
+        padding-right: 10px;
+    }
+    input[type="text"] {
+        width: 100%;
+        padding: 8px;
+        border: 1px solid #ccc;
+        border-radius: 5px;
+    }
+    .full-width {
+        grid-column: span 2;
+    }
+    input[type="submit"] {
+        grid-column: span 2;
+        padding: 10px;
+        background-color: #4CAF50;
+        color: white;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+    }
+    input[type="submit"]:hover {
+        background-color: #45a049;
+    }
+</style>
+<script>
+    function validateForm(event) {
+        event.preventDefault(); // Impede o envio do formulário
+        const form = document.querySelector('form');
+        const inputs = form.querySelectorAll('input[type="text"]');
+        let allFilled = true;
+
+        inputs.forEach(input => {
+            if (input.value.trim() === '') {
+                allFilled = false;
+            }
+        });
+
+        if (!allFilled) {
+            alert('Todos os campos são necessários.');
+        } else {
+            form.submit(); // Envia o formulário se todos os campos estiverem preenchidos
+        }
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+        const form = document.querySelector('form');
+        form.addEventListener('submit', validateForm);
+    });
+</script>
+</head>
+<body>
+
+    <form action="/salvar" method="POST">
+        <h1 class="full-width">Cadastro de Conta Nova</h1>
+        <label for="accountPpmId">ID PPM:</label> 
+        <input type="text" id="accountPpmId" name="accountPpmId">
+    
+        <label for="accountSapId">ID SAP:</label> 
+        <input type="text" id="accountSapId" name="accountSapId">
+    
+        <label for="accountName" class="full-width">Nome:</label> 
+        <input type="text" id="accountName" name="accountName" class="full-width">
+        
+        <label for="accountDescription" class="full-width">Descrição:</label> 
+        <input type="text" id="accountDescription" name="accountDescription" class="full-width">
+        
+        <label for="accountType">Tipo:</label> 
+        <input type="text" id="accountType" name="accountType">
+        
+        <input type="submit" value="Enviar">
+    </form>
+</body>
+</html>
+

@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Lista de Contas</title>
+<link rel="stylesheet" type="text/css" href="/css/contas.css">
+</head>
+<body>
+    <h1>Lista de Contas</h1>
+    <table id="accountsTable">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Nome</th>
+                <th>Descrição</th>
+                <th>ID PPM</th>
+                <th>ID SAP</th>
+                <th>Tipo</th>
+            </tr>
+        </thead>
+        <tbody>
+            <!-- As linhas da tabela serão preenchidas dinamicamente -->
+        </tbody>
+    </table>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            fetch('/contas')
+                .then(response => {
+                    console.log('Resposta recebida:', response); // Log para depuração
+                    return response.json();
+                })
+                .then(data => {
+                    console.log('Dados recebidos:', data); // Log para depuração
+                    const tableBody = document.getElementById('accountsTable').querySelector('tbody');
+                    tableBody.innerHTML = '';
+                    data.forEach(account => {
+                        console.log('Adicionando conta:', account); // Log para depuração
+                        const row = tableBody.insertRow();
+                        row.insertCell(0).textContent = account.accountId;
+                        row.insertCell(1).textContent = account.accountName;
+                        row.insertCell(2).textContent = account.accountDescription;
+                        row.insertCell(3).textContent = account.accountPpmId;
+                        row.insertCell(4).textContent = account.accountSapId;
+                        row.insertCell(5).textContent = account.accountType;
+                    });
+                })
+                .catch(error => {
+                    console.error('Erro ao buscar as contas:', error);
+                });
+        });
+    </script>
+</body>
+</html>

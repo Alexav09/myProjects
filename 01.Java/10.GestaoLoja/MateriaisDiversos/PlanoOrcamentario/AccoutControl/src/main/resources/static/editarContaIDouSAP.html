@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Gerenciar Conta</title>
+</head>
+<body>
+    <form id="accountForm">
+        <label for="accountId">ID da Conta:</label>
+        <input type="text" id="accountId" name="accountId"><br><br>
+        
+        <label for="accountSapId">ID SAP:</label>
+        <input type="text" id="accountSapId" name="accountSapId"><br><br>
+        
+        <button type="button" onclick="fetchAccount()">Buscar Conta</button><br><br>
+        
+        <label for="accountName">Nome:</label>
+        <input type="text" id="accountName" name="accountName" disabled><br><br>
+        
+        <label for="accountDescription">Descrição:</label>
+        <input type="text" id="accountDescription" name="accountDescription" disabled><br><br>
+        
+        <label for="accountPpmId">ID PPM:</label>
+        <input type="text" id="accountPpmId" name="accountPpmId" disabled><br><br>
+        
+        <label for="accountType">Tipo:</label>
+        <input type="text" id="accountType" name="accountType" disabled><br><br>
+        
+        <button type="button" onclick="enableEditing()">Editar Conta</button>
+        <button type="button" onclick="updateAccount()">Salvar Alterações</button>
+        <button type="button" onclick="deleteAccount()">Deletar Conta</button>
+    </form>
+
+    <script>
+        function fetchAccount() {
+            const accountId = document.getElementById('accountId').value.trim();
+            const accountSapId = document.getElementById('accountSapId').value.trim();
+            let url = '';
+
+            if (accountId) {
+                url = `/conta/id/${accountId}`;
+            } else if (accountSapId) {
+                url = `/conta/sap/${accountSapId}`;
+            } else {
+                resetForm();
+                return;
+            }
+
+            fetch(url)
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Conta não encontrada');
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    document.getElementById('accountName').value = data.accountName || '';
+                    document.getElementById('accountDescription').value = data.accountDescription || '';
+                    document.getElementById('accountPpmId').value = data.accountPpmId || '';
+                    document.getElementById('accountSapId').value = data.accountSapId || '';
+                    document.getElementById('accountType').value = data.accountType || '';
+                })
+                .catch(error => {
+                    console.error('Erro:', error);
+                    alert('Erro ao buscar a conta.');
+                    resetForm();
+                });
+        }
+
+        function enableEditing() {
+            document.getElementById('accountName').disabled = false;
+            document.getElementById('accountDescription').disabled = false;
+            document.getElementById('accountPpmId').disabled = false;
+            document.getElementById('accountSapId').disabled = false;
+            document.getElementById('accountType').disabled = false;
+        }
+
+        function updateAccount() {
+            const accountId = document.getElementById('accountId').value.trim();
+            const accountSapId = document.getElementById('accountSapId').value.trim();
+            const accountName = document.getElementById('accountName').value.trim();
+            const accountDescription = document.getElementById('accountDescription').value.trim();
+            const accountPpmId = document.getElementById('accountPpmId').value.trim();
+            const accountType = document.getElementById('accountType').value.trim();
+
+            const accountData = {
+                accountName: accountName,
+                accountDescription: accountDescription,
+                accountPpmId: accountPpmId,
+                accountSapId: accountSapId,
+                accountType: accountType
+            };
+
+            let url = '';
+            if (accountId) {
+                url = `/conta/atualizar/${accountId}`;
+            } else if (accountSapId) {
+                url = `/conta/atualizarSap/${accountSapId}`;
+            }
+
+            fetch(url, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(accountData)
+            })
+            .then(response => {
+                if (response.ok) {
+                    alert('Conta atualizada com sucesso!');
+                    resetForm();
+                } else {
+                    alert('Erro ao atualizar a conta.');
+                }
+            })
+            .catch(error => {
+                console.error('Erro:', error);
+                alert('Erro ao atualizar a conta.');
+            });
+        }
+
+        function deleteAccount() {
+            const accountId = document.getElementById('accountId').value.trim();
+            const accountSapId = document.getElementById('accountSapId').value.trim();
+            let url = '';
+
+            if (accountId) {
+                url = `/conta/excluirId/${accountId}`;
+            } else if (accountSapId) {
+                url = `/conta/excluirSap/${accountSapId}`;
+            }
+
+            fetch(url, {
+                method: 'DELETE'
+            })
+            .then(response => {
+                if (response.ok) {
+                    alert('Conta deletada com sucesso!');
+                    resetForm();
+                } else {
+                    alert('Erro ao deletar a conta.');
+                }
+            })
+            .catch(error => {
+                console.error('Erro:', error);
+                alert('Erro ao deletar a conta.');
+            });
+        }
+
+        function resetForm() {
+            document.getElementById('accountForm').reset();
+            document.getElementById('accountName').disabled = true;
+            document.getElementById('accountDescription').disabled = true;
+            document.getElementById('accountPpmId').disabled = true;
+            document.getElementById('accountSapId').disabled = true;
+            document.getElementById('accountType').disabled = true;
+        }
+    </script>
+</body>
+</html>
+

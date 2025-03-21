@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Nova Produção</title>
+<style>
+    body {
+        font-family: Arial, sans-serif;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+        margin: 0;
+    }
+    form {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 10px;
+        max-width: 600px;
+        width: 100%;
+        padding: 30px;
+        border: 1px solid #ccc;
+        border-radius: 10px;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    }
+    h1 {
+        grid-column: span 2;
+        text-align: center;
+        color: #00008B; /* Azul escuro */
+    }
+    label {
+        display: flex;
+        align-items: center;
+        justify-content: flex-start;
+        padding-right: 10px;
+    }
+    input[type="text"], input[type="number"], input[type="date"], select, textarea {
+        width: 100%;
+        padding: 8px;
+        border: 1px solid #ccc;
+        border-radius: 5px;
+    }
+    .full-width {
+        grid-column: span 2;
+    }
+    input[type="submit"] {
+        grid-column: span 2;
+        padding: 10px;
+        background-color: #4CAF50;
+        color: white;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+    }
+    input[type="submit"]:hover {
+        background-color: #45a049;
+    }
+</style>
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        // Carregar produtos cadastrados
+        fetch('http://localhost:8080/api/produtos')
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Erro ao carregar produtos: ' + response.statusText);
+                }
+                return response.json();
+            })
+            .then(data => {
+                const produtoSelect = document.getElementById('nomeProduto');
+                if (data.length === 0) {
+                    const option = document.createElement('option');
+                    option.textContent = 'Nenhum produto encontrado';
+                    produtoSelect.appendChild(option);
+                } else {
+                    data.forEach(produto => {
+                        const option = document.createElement('option');
+                        option.value = produto.nomeProduto;
+                        option.textContent = produto.nomeProduto;
+                        produtoSelect.appendChild(option);
+                    });
+                }
+            })
+            .catch(error => {
+                console.error('Erro ao carregar produtos:', error);
+                alert('Erro ao carregar produtos: ' + error.message);
+            });
+
+        document.getElementById('novaProducaoForm').addEventListener('submit', function(event) {
+            event.preventDefault();
+            const formData = new FormData(this);
+            const producaoData = {
+                nomeProduto: formData.get('nomeProduto'),
+                qtdProducao: formData.get('qtdProducao'),
+                tamanhoProducao: formData.get('tamanhoProducao'),
+                descricaoProducao: formData.get('descricaoProducao'),
+                dataProducao: formData.get('dataProducao'),
+                situacaoProducao: formData.get('situacaoProducao') === 'on',
+                perdaProducao: formData.get('perdaProducao'),
+                qtdParaEstoqueProducao: formData.get('qtdParaEstoqueProducao')
+            };
+            fetch('/producao/salvar', {
+                method: 'POST',
+                body: JSON.stringify(producaoData),
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                alert('Produção salva com sucesso!');
+                // Redirecionar ou limpar o formulário
+            })
+            .catch(error => {
+                console.error('Erro ao salvar a produção:', error);
+                alert('Erro ao salvar a produção: ' + error.message);
+            });
+        });
+    });
+</script>
+</head>
+<body>
+    <form id="novaProducaoForm">
+        <h1 class="full-width">Nova Produção</h1>
+        <label for="nomeProduto">Produto:</label> 
+        <select id="nomeProduto" name="nomeProduto" required>
+            <!-- Os produtos serão carregados aqui -->
+        </select>
+
+        <label for="qtdProducao">Quantidade:</label> 
+        <input type="number" id="qtdProducao" name="qtdProducao" required>
+
+        <label for="tamanhoProducao">Tamanho:</label> 
+        <input type="text" id="tamanhoProducao" name="tamanhoProducao" required>
+
+        <label for="descricaoProducao" class="full-width">Descrição:</label> 
+        <textarea id="descricaoProducao" name="descricaoProducao" class="full-width" required></textarea>
+
+        <label for="dataProducao" class="full-width">Data:</label> 
+        <input type="date" id="dataProducao" name="dataProducao" class="full-width" required>
+
+        <label for="situacaoProducao">Situação:</label> 
+        <input type="checkbox" id="situacaoProducao" name="situacaoProducao">
+
+        <label for="perdaProducao">Perda:</label> 
+        <input type="number" id="perdaProducao" name="perdaProducao" required>
+
+        <label for="qtdParaEstoqueProducao">Quantidade para Estoque:</label> 
+        <input type="number" id="qtdParaEstoqueProducao" name="qtdParaEstoqueProducao" required>
+
+        <input type="submit" value="Salvar">
+    </form>
+</body>
+</html>

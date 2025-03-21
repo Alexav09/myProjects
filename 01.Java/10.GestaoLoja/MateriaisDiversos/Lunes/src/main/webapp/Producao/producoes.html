@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Lista de Produções</title>
+<style>
+    body {
+        font-family: Arial, sans-serif;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        height: 100vh;
+        margin: 0;
+        padding: 20px;
+        background-color: #f4f4f4;
+    }
+    h1 {
+        color: #00008B; /* Azul escuro */
+    }
+    .table-container {
+        width: 100%;
+        max-width: 1200px;
+        overflow: auto;
+        max-height: 70vh; /* Ajuste a altura máxima da tabela */
+        position: relative;
+    }
+    table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 20px;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    }
+    th, td {
+        padding: 8px; /* Reduzir o padding para diminuir a altura das células */
+        border: 1px solid #ccc;
+        text-align: left;
+    }
+    th {
+        background-color: #4CAF50; /* Mesma cor dos botões */
+        color: white;
+        position: sticky;
+        top: 0;
+        height: 20px;
+        z-index: 3; /* Aumentar o z-index para garantir que o cabeçalho fique acima das colunas fixas */
+    }
+    .filter-row th {
+        top: 35px; /* Ajuste conforme necessário para alinhar com a altura do cabeçalho */
+    }
+    td {
+        font-size: 12px; /* Reduzir o tamanho da fonte dos dados da tabela */
+    }
+    .fixed-column {
+        position: sticky;
+        left: 0;
+        background-color: #4CAF50; /* Mesma cor dos botões */
+        z-index: 2; /* Ajustar o z-index para garantir que as colunas fixas fiquem abaixo do cabeçalho */
+    }
+    .fixed-column + .fixed-column {
+        left: 100px; /* Ajuste conforme necessário */
+    }
+    .fixed-column + .fixed-column + .fixed-column {
+        left: 200px; /* Ajuste conforme necessário */
+    }
+    tr:nth-child(even) {
+        background-color: #f9f9f9;
+    }
+    .filter-row input {
+        width: 100%;
+        box-sizing: border-box;
+    }
+    .filter-row th, .filter-row td {
+        height: 20px; /* Ajuste conforme necessário para alinhar com a altura do cabeçalho */
+    }
+</style>
+</head>
+<body>
+    <h1>Lista de Produções</h1>
+    <div class="table-container">
+        <table id="productionsTable">
+            <thead>
+                <tr>
+                    <th class="fixed-column">ID</th>
+                    <th class="fixed-column">Nome do Produto</th>
+                    <th>Quantidade</th>
+                    <th>Tamanho</th>
+                    <th>Descrição</th>
+                    <th>Data</th>
+                    <th>Situação</th>
+                    <th>Perda</th>
+                    <th>Quantidade para Estoque</th>
+                </tr>
+                <tr class="filter-row">
+                    <th class="fixed-column"><input type="text" id="filterId" onkeyup="filterTable()" placeholder="por ID"></th>
+                    <th class="fixed-column"><input type="text" id="filterNomeProduto" onkeyup="filterTable()" placeholder="por Nome do Produto"></th>
+                    <th><input type="text" id="filterQtdProducao" onkeyup="filterTable()" placeholder="por Quantidade"></th>
+                    <th><input type="text" id="filterTamanhoProducao" onkeyup="filterTable()" placeholder="por Tamanho"></th>
+                    <th><input type="text" id="filterDescricaoProducao" onkeyup="filterTable()" placeholder="por Descrição"></th>
+                    <th><input type="text" id="filterDataProducao" onkeyup="filterTable()" placeholder="por Data"></th>
+                    <th><input type="text" id="filterSituacaoProducao" onkeyup="filterTable()" placeholder="por Situação"></th>
+                    <th><input type="text" id="filterPerdaProducao" onkeyup="filterTable()" placeholder="por Perda"></th>
+                    <th><input type="text" id="filterQtdParaEstoqueProducao" onkeyup="filterTable()" placeholder="por Quantidade para Estoque"></th>
+                </tr>
+            </thead>
+            <tbody>
+                <!-- As linhas da tabela serão preenchidas dinamicamente -->
+            </tbody>
+        </table>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            fetch('http://localhost:8080/api/producao')
+                .then(response => response.json())
+                .then(data => {
+                    const tableBody = document.getElementById('productionsTable').querySelector('tbody');
+                    tableBody.innerHTML = '';
+                    data.forEach(producao => {
+                        const row = tableBody.insertRow();
+                        row.insertCell(0).textContent = producao.idProducao;
+                        row.insertCell(1).textContent = producao.nomeProduto;
+                        row.insertCell(2).textContent = producao.qtdProducao;
+                        row.insertCell(3).textContent = producao.tamanhoProducao;
+                        row.insertCell(4).textContent = producao.descricaoProducao;
+                        row.insertCell(5).textContent = new Date(producao.dataProducao).toLocaleDateString('pt-BR');
+                        row.insertCell(6).textContent = producao.situacaoProducao ? 'Sim' : 'Não';
+                        row.insertCell(7).textContent = producao.perdaProducao;
+                        row.insertCell(8).textContent = producao.qtdParaEstoqueProducao;
+                    });
+                })
+                .catch(error => {
+                    console.error('Erro ao buscar as produções:', error);
+                });
+        });
+
+        function filterTable() {
+            const filterId = document.getElementById('filterId').value.toLowerCase();
+            const filterNomeProduto = document.getElementById('filterNomeProduto').value.toLowerCase();
+            const filterQtdProducao = document.getElementById('filterQtdProducao').value.toLowerCase();
+            const filterTamanhoProducao = document.getElementById('filterTamanhoProducao').value.toLowerCase();
+            const filterDescricaoProducao = document.getElementById('filterDescricaoProducao').value.toLowerCase();
+            const filterDataProducao = document.getElementById('filterDataProducao').value.toLowerCase();
+            const filterSituacaoProducao = document.getElementById('filterSituacaoProducao').value.toLowerCase();
+            const filterPerdaProducao = document.getElementById('filterPerdaProducao').value.toLowerCase();
+            const filterQtdParaEstoqueProducao = document.getElementById('filterQtdParaEstoqueProducao').value.toLowerCase();
+            const table = document.getElementById('productionsTable');
+            const rows = table.getElementsByTagName('tr');
+
+            for (let i = 2; i < rows.length; i++) {
+                const cells = rows[i].getElementsByTagName('td');
+                if (cells.length < 9) continue;
+
+                const id = cells[0].textContent.toLowerCase();
+                const nomeProduto = cells[1].textContent.toLowerCase();
+                const qtdProducao = cells[2].textContent.toLowerCase();
+                const tamanhoProducao = cells[3].textContent.toLowerCase();
+                const descricaoProducao = cells[4].textContent.toLowerCase();
+                const dataProducao = cells[5].textContent.toLowerCase();
+                const situacaoProducao = cells[6].textContent.toLowerCase();
+                const perdaProducao = cells[7].textContent.toLowerCase();
+                const qtdParaEstoqueProducao = cells[8].textContent.toLowerCase();
+
+                rows[i].style.display = 
+                    (id.includes(filterId) &&
+                    nomeProduto.includes(filterNomeProduto) &&
+                    qtdProducao.includes(filterQtdProducao) &&
+                    tamanhoProducao.includes(filterTamanhoProducao) &&
+                    descricaoProducao.includes(filterDescricaoProducao) &&
+                    dataProducao.includes(filterDataProducao) &&
+                    situacaoProducao.includes(filterSituacaoProducao) &&
+                    perdaProducao.includes(filterPerdaProducao) &&
+                    qtdParaEstoqueProducao.includes(filterQtdParaEstoqueProducao)) ? '' : 'none';
+            }
+        }
+    </script>
+</body>
+</html>
